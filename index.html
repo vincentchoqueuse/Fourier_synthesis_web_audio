@@ -1,0 +1,241 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+        <title>Fourier synthesis</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+        <script>
+            
+            $(function () {
+              
+              var AudioContext = window.AudioContext || window.webkitAudioContext;
+              var context = new AudioContext();
+              var isplaying=0;
+              var oscillator = null;
+              var ak_vect = new Float32Array(9);
+              var bk_vect = new Float32Array(9);
+              ak_vect[1]=1;
+              var fourier =context.createPeriodicWave(ak_vect,bk_vect);;
+              var filter=context.createBiquadFilter();
+              var gain_direct=context.createGain();
+              var gain_wet=context.createGain();
+              
+              //init web audio node values
+              filter.type="bandpass";
+              filter.frequency.value=100;
+              filter.Q.value=100;
+              gain_direct.gain.value=0.5;
+              gain_wet.gain.value=0;
+              //make web audio connection
+              gain_direct.connect(context.destination);
+              filter.connect(gain_wet);
+              gain_wet.connect(context.destination);
+              
+              //UI fonction
+              $("#ui_play").on('click', function () {
+                   isplaying=!($(this).hasClass("active"));
+                   if (isplaying)
+                    {
+                    $(this).html("<i class='fa fa-pause'></i> Pause");
+                    //construct Web audio oscillator (the audio oscillator is recreated when isplaysing is equal to 1)
+                    fourier = context.createPeriodicWave(ak_vect,bk_vect);
+                    oscillator = context.createOscillator();
+                    oscillator.setPeriodicWave(fourier);
+                    oscillator.frequency.value = $("#ui_freq").val();
+                    oscillator.connect(gain_direct);
+                    oscillator.connect(filter);
+                    oscillator.start(0);
+                    }
+                   else
+                   {
+                   $(this).html("<i class='fa fa-play'></i> Play");
+                    oscillator.stop(0);
+                   }
+                })
+              
+              $("#filter_enabled").change(function (){
+                    value=$(this).is(':checked');
+                    if (value)
+                      {
+                      gain_direct.gain.value=0;
+                      gain_wet.gain.value=0.5;
+                      }
+                    else
+                      {
+                      gain_direct.gain.value=0.5;
+                      gain_wet.gain.value=0;
+                      }
+                });
+              
+              $(".update_filter").change(function (){
+                    value=$(this).val();
+                    if ($(this).hasClass("frequency"))
+                        {
+                        filter.frequency.value=value;
+                        }
+                     if ($(this).hasClass("Q"))
+                        {
+                        filter.Q.value=value;
+                        }
+                     if ($(this).hasClass("type"))
+                        {
+                        filter.type=value;
+                        }
+                    });
+              
+              $(".ui_an, .ui_bn").change(function (){
+                    //get the oscillator number from the row in table
+                    var osc_index = $(this).closest('tr').index();
+                    var value=$(this).val();
+                    if ($(this).hasClass("ui_an"))
+                        {
+                        ak_vect[osc_index]=value;
+                        }
+                    if ($(this).hasClass("ui_bn"))
+                        {
+                        bk_vect[osc_index]=value;
+                        }
+                    if (isplaying)
+                        {
+                        fourier = context.createPeriodicWave(ak_vect,bk_vect);
+                        oscillator.setPeriodicWave(fourier);
+                        }
+                 });
+              
+              $("#ui_freq").change(function (){
+                    var value = $(this).val(); //get the fundamental frequency
+                    for (var indice=2;indice<=8;indice++)
+                        {
+                        $("#table_osc tbody tr").eq(indice).find(".ui_freq").val(indice*value);
+                        }
+                    if (isplaying)
+                       {oscillator.frequency.value = value;}
+                    });
+              });
+            </script>
+    </head>
+
+    <body >
+        <div class="container">
+            <div class="pull-right">
+                <button type="button" id="ui_play" class="btn btn-danger btn" data-toggle="button"  aria-pressed="false" autocomplete="off" style="margin-top:40px;width:150px;"><i class="fa fa-play"></i> Play</button>
+            </div>
+            <h1 class="page-header">Fourier synthesis</h1>
+
+            <ul class="nav nav-pills">
+                <li class="active"><a data-toggle="tab" href="#oscillator">Oscillator</a></li>
+                <li ><a data-toggle="tab" href="#filter">Filter</a></li>
+            </ul>
+            
+            
+            <div class="tab-content">
+                <div id="oscillator" class="tab-pane fade in active">
+                    
+                    <h3>Oscillator</h3>
+                    <table class="table" id="table_osc">
+                        <thead>
+                            <tr >
+                                <th>Name</th>
+                                <th>Frequency</th>
+                                <th>an</th>
+                                <th>bk</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>DC</td>
+                                <td><input type="number" class="form-control update_osc ui_freq" min=0 max=2000 value=0 disabled></td>
+                                <td><input type="number" class="form-control update_osc ui_an" min=-10 max=10 value=0></td>
+                                <td><input type="number" class="form-control update_osc ui_bn" min=-10 max=10 value=0></td>
+                            </tr>
+                            <tr>
+                                <td>Oscillator 1</td>
+                                <td><input id="ui_freq" type="number" class="form-control update_osc" min=0 max=2000 value=100></td>
+                                <td><input type="number" class="form-control update_osc ui_an" min=-10 max=10 value=1></td>
+                                <td><input type="number" class="form-control update_osc ui_bn" min=-10 max=10 value=0></td>
+                            </tr>
+                            <tr>
+                                <td>Oscillator 2</td>
+                                <td><input type="number" class="form-control ui_freq" min=0 max=2000 value=200 disabled></td>
+                                <td><input type="number" class="form-control update_osc ui_an" min=-10 max=10 value=0></td>
+                                <td><input type="number" class="form-control update_osc ui_bn" min=-10 max=10 value=0></td>
+                            </tr>
+                            <tr>
+                                <td>Oscillator 3</td>
+                                <td><input type="number" class="form-control ui_freq" min=0 max=2000 value=300 disabled></td>
+                                <td><input type="number" class="form-control update_osc ui_an" min=-10 max=10 value=0></td>
+                                <td><input type="number" class="form-control update_osc ui_bn" min=-10 max=10 value=0></td>
+                            </tr>
+                            <tr>
+                                <td>Oscillator 4</td>
+                                <td><input type="number" class="form-control ui_freq" min=0 max=2000 value=400 disabled></td>
+                                <td><input type="number" class="form-control update_osc ui_an" min=-10 max=10 value=0></td>
+                                <td><input type="number" class="form-control update_osc ui_bn" min=-10 max=10 value=0></td>
+                            </tr>
+                            <tr>
+                                <td>Oscillator 5</td>
+                                <td><input type="number" class="form-control ui_freq" min=0 max=2000 value=500 disabled></td>
+                                <td><input type="number" class="form-control update_osc ui_an" min=-10 max=10 value=0></td>
+                                <td><input type="number" class="form-control update_osc ui_bn" min=-10 max=10 value=0></td>
+                            </tr>
+                            <tr>
+                                <td>Oscillator 6</td>
+                                   <td><input type="number" class="form-control ui_freq" min=0 max=2000 value=600 disabled></td>
+                                <td><input type="number" class="form-control update_osc ui_an" min=-10 max=10 value=0></td>
+                                <td><input type="number" class="form-control update_osc ui_bn" min=-10 max=10 value=0></td>
+                            </tr>
+                            <tr>
+                                <td>Oscillator 7</td>
+                                   <td><input type="number" class="form-control ui_freq" min=0 max=2000 value=700 disabled></td>
+                                <td><input type="number" class="form-control update_osc ui_an" min=-10 max=10 value=0></td>
+                                <td><input type="number" class="form-control update_osc ui_bn" min=-10 max=10 value=0></td>
+                            </tr>
+                            <tr>
+                                <td>Oscillator 8</td>
+                                <td><input type="number" class="form-control ui_freq" min=0 max=2000 value=800 disabled></td>
+                                <td><input type="number" class="form-control update_osc ui_an" min=-10 max=10 value=0></td>
+                                <td><input type="number" class="form-control update_osc ui_bn" min=-10 max=10 value=0></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div id="filter" class="tab-pane fade in">
+                    <h3>Filter</h3>
+                    
+                    <table class="table" id="table_editor">
+                        <thead>
+                            <tr >
+                                <th></th>
+                                <th>Active</th>
+                                <th>Type</th>
+                                <th>frequency</th>
+                                <th>Q</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr >
+                                <td>Filter1</td>
+                                <td><input type="checkbox" id="filter_enabled" name="vehicle" class="form-control" ></td>
+                                <td><select id="filter_type" class="form-control update_filter type" />
+                                        <option value="bandpass" selected>bandpass</option>
+                                        <option value="lowpass">lowpass</option>
+                                        <option value="highpass">highpass</option>
+                                        <option value="lowshelf">lowshelf</option>
+                                        <option value="highshelf">highshelf</option>
+                                    </select>
+                                </td>
+                                <td><input type="number" class="form-control update_filter frequency" min=0 max=20000 value=100></td>
+                                <td><input type="number" class="form-control update_filter Q" min=0 max=1000 value=100></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
