@@ -1,131 +1,132 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-        <title>Fourier synthesis</title>
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
-        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-        <script>
-            
-            $(function () {
-              
-              var AudioContext = window.AudioContext || window.webkitAudioContext;
-              var context = new AudioContext();
-              var isplaying=0;
-              var oscillator = null;
-              var ak_vect = new Float32Array(9);
-              var bk_vect = new Float32Array(9);
-              ak_vect[1]=1;
-              var fourier =context.createPeriodicWave(ak_vect,bk_vect);;
-              var filter=context.createBiquadFilter();
-              var gain_direct=context.createGain();
-              var gain_wet=context.createGain();
-              
-              //init web audio node values
-              filter.type="bandpass";
-              filter.frequency.value=100;
-              filter.Q.value=100;
-              gain_direct.gain.value=0.5;
-              gain_wet.gain.value=0;
-              //make web audio connection
-              gain_direct.connect(context.destination);
-              filter.connect(gain_wet);
-              gain_wet.connect(context.destination);
-              
-              //UI fonction
-              $("#ui_play").on('click', function () {
-                   isplaying=!($(this).hasClass("active"));
-                   if (isplaying)
-                    {
-                    $(this).html("<i class='fa fa-pause'></i> Pause");
-                    //construct Web audio oscillator (the audio oscillator is recreated when isplaysing is equal to 1)
-                    fourier = context.createPeriodicWave(ak_vect,bk_vect);
-                    oscillator = context.createOscillator();
-                    oscillator.setPeriodicWave(fourier);
-                    oscillator.frequency.value = $("#ui_freq").val();
-                    oscillator.connect(gain_direct);
-                    oscillator.connect(filter);
-                    oscillator.start(0);
-                    }
-                   else
-                   {
-                   $(this).html("<i class='fa fa-play'></i> Play");
-                    oscillator.stop(0);
-                   }
-                })
-              
-              $("#filter_enabled").change(function (){
-                    value=$(this).is(':checked');
-                    if (value)
-                      {
-                      gain_direct.gain.value=0;
-                      gain_wet.gain.value=0.5;
-                      }
-                    else
-                      {
-                      gain_direct.gain.value=0.5;
-                      gain_wet.gain.value=0;
-                      }
-                });
-              
-              $(".update_filter").change(function (){
-                    value=$(this).val();
-                    if ($(this).hasClass("frequency"))
-                        {
-                        filter.frequency.value=value;
-                        }
-                     if ($(this).hasClass("Q"))
-                        {
-                        filter.Q.value=value;
-                        }
-                     if ($(this).hasClass("type"))
-                        {
-                        filter.type=value;
-                        }
-                    });
-              
-              $(".ui_an, .ui_bn").change(function (){
-                    //get the oscillator number from the row in table
-                    var osc_index = $(this).closest('tr').index();
-                    var value=$(this).val();
-                    if ($(this).hasClass("ui_an"))
-                        {
-                        ak_vect[osc_index]=value;
-                        }
-                    if ($(this).hasClass("ui_bn"))
-                        {
-                        bk_vect[osc_index]=value;
-                        }
-                    if (isplaying)
-                        {
-                        fourier = context.createPeriodicWave(ak_vect,bk_vect);
-                        oscillator.setPeriodicWave(fourier);
-                        }
-                 });
-              
-              $("#ui_freq").change(function (){
-                    var value = $(this).val(); //get the fundamental frequency
-                    for (var indice=2;indice<=8;indice++)
-                        {
-                        $("#table_osc tbody tr").eq(indice).find(".ui_freq").val(indice*value);
-                        }
-                    if (isplaying)
-                       {oscillator.frequency.value = value;}
-                    });
-              });
-            </script>
-    </head>
-
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+                    <title>Fourier synthesis</title>
+                    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+                        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+                            <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+                            <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+                            <script>
+                                
+                                $(function () {
+                                  
+                                  var AudioContext = window.AudioContext || window.webkitAudioContext;
+                                  var context = new AudioContext();
+                                  var isplaying=0;
+                                  var oscillator = null;
+                                  var ak_vect = new Float32Array(9);
+                                  var bk_vect = new Float32Array(9);
+                                  ak_vect[1]=1;
+                                  var fourier =context.createPeriodicWave(ak_vect,bk_vect);;
+                                  var filter=context.createBiquadFilter();
+                                  var gain_direct=context.createGain();
+                                  var gain_wet=context.createGain();
+                                  
+                                  //init web audio node values
+                                  filter.type="bandpass";
+                                  filter.frequency.value=100;
+                                  filter.Q.value=100;
+                                  gain_direct.gain.value=0.5;
+                                  gain_wet.gain.value=0;
+                                  //make web audio connection
+                                  gain_direct.connect(context.destination);
+                                  filter.connect(gain_wet);
+                                  gain_wet.connect(context.destination);
+                                  
+                                  //UI fonction
+                                  $("#ui_play").on('click', function () {
+                                                   isplaying=!($(this).hasClass("active"));
+                                                   if (isplaying)
+                                                   {
+                                                   $(this).html("<i class='fa fa-pause'></i> Pause");
+                                                   //construct Web audio oscillator (the audio oscillator is recreated when isplaysing is equal to 1)
+                                                   fourier = context.createPeriodicWave(ak_vect,bk_vect);
+                                                   oscillator = context.createOscillator();
+                                                   oscillator.setPeriodicWave(fourier);
+                                                   oscillator.frequency.value = $("#ui_freq").val();
+                                                   oscillator.connect(gain_direct);
+                                                   oscillator.connect(filter);
+                                                   oscillator.start(0);
+                                                   }
+                                                   else
+                                                   {
+                                                   $(this).html("<i class='fa fa-play'></i> Play");
+                                                   oscillator.stop(0);
+                                                   }
+                                                   })
+                                  
+                                  $("#filter_enabled").change(function (){
+                                                              value=$(this).is(':checked');
+                                                              if (value)
+                                                              {
+                                                              gain_direct.gain.value=0;
+                                                              gain_wet.gain.value=0.5;
+                                                              }
+                                                              else
+                                                              {
+                                                              gain_direct.gain.value=0.5;
+                                                              gain_wet.gain.value=0;
+                                                              }
+                                                              });
+                                  
+                                  $(".update_filter").change(function (){
+                                                             value=$(this).val();
+                                                             if ($(this).hasClass("frequency"))
+                                                             {
+                                                             filter.frequency.value=value;
+                                                             }
+                                                             if ($(this).hasClass("Q"))
+                                                             {
+                                                             filter.Q.value=value;
+                                                             }
+                                                             if ($(this).hasClass("type"))
+                                                             {
+                                                             filter.type=value;
+                                                             }
+                                                             });
+                                  
+                                  $(".ui_an, .ui_bn").change(function (){
+                                                             //get the oscillator number from the row in table
+                                                             var osc_index = $(this).closest('tr').index();
+                                                             var value=$(this).val();
+                                                             if ($(this).hasClass("ui_an"))
+                                                             {
+                                                             ak_vect[osc_index]=value;
+                                                             }
+                                                             if ($(this).hasClass("ui_bn"))
+                                                             {
+                                                             bk_vect[osc_index]=value;
+                                                             }
+                                                             if (isplaying)
+                                                             {
+                                                             fourier = context.createPeriodicWave(ak_vect,bk_vect);
+                                                             oscillator.setPeriodicWave(fourier);
+                                                             }
+                                                             });
+                                  
+                                  $("#ui_freq").change(function (){
+                                                       var value = $(this).val(); //get the fundamental frequency
+                                                       for (var indice=2;indice<=8;indice++)
+                                                       {
+                                                       $("#table_osc tbody tr").eq(indice).find(".ui_freq").val(indice*value);
+                                                       }
+                                                       if (isplaying)
+                                                       {oscillator.frequency.value = value;}
+                                                       });
+                                  });
+                                </script>
+                            </head>
+    
     <body >
         <div class="container">
+            <a href="https://github.com/vincentchoqueuse"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://camo.githubusercontent.com/567c3a48d796e2fc06ea80409cc9dd82bf714434/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_left_darkblue_121621.png"></a>
             <div class="pull-right">
                 <button type="button" id="ui_play" class="btn btn-danger btn" data-toggle="button"  aria-pressed="false" autocomplete="off" style="margin-top:40px;width:150px;"><i class="fa fa-play"></i> Play</button>
             </div>
             <h1 class="page-header">Fourier synthesis</h1>
-
+            
             <ul class="nav nav-tabs">
                 <li class="active"><a data-toggle="tab" href="#oscillator">Oscillator</a></li>
                 <li ><a data-toggle="tab" href="#filter">Filter</a></li>
@@ -184,13 +185,13 @@
                             </tr>
                             <tr>
                                 <td>Oscillator 6</td>
-                                   <td><input type="number" class="form-control ui_freq" min=0 max=2000 value=600 disabled></td>
+                                <td><input type="number" class="form-control ui_freq" min=0 max=2000 value=600 disabled></td>
                                 <td><input type="number" class="form-control update_osc ui_an" min=-10 max=10 value=0></td>
                                 <td><input type="number" class="form-control update_osc ui_bn" min=-10 max=10 value=0></td>
                             </tr>
                             <tr>
                                 <td>Oscillator 7</td>
-                                   <td><input type="number" class="form-control ui_freq" min=0 max=2000 value=700 disabled></td>
+                                <td><input type="number" class="form-control ui_freq" min=0 max=2000 value=700 disabled></td>
                                 <td><input type="number" class="form-control update_osc ui_an" min=-10 max=10 value=0></td>
                                 <td><input type="number" class="form-control update_osc ui_bn" min=-10 max=10 value=0></td>
                             </tr>
@@ -220,13 +221,13 @@
                         <tbody>
                             <tr >
                                 <td>Filter1</td>
-                                <td><input type="checkbox" id="filter_enabled" name="vehicle" ></td>
+                                <td><input type="checkbox" id="filter_enabled" name="vehicle" class="form-control" ></td>
                                 <td><select id="filter_type" class="form-control update_filter type" />
-                                        <option value="bandpass" selected>bandpass</option>
-                                        <option value="lowpass">lowpass</option>
-                                        <option value="highpass">highpass</option>
-                                        <option value="lowshelf">lowshelf</option>
-                                        <option value="highshelf">highshelf</option>
+                                    <option value="bandpass" selected>bandpass</option>
+                                    <option value="lowpass">lowpass</option>
+                                    <option value="highpass">highpass</option>
+                                    <option value="lowshelf">lowshelf</option>
+                                    <option value="highshelf">highshelf</option>
                                     </select>
                                 </td>
                                 <td><input type="number" class="form-control update_filter frequency" min=0 max=20000 value=100></td>
@@ -236,6 +237,11 @@
                     </table>
                 </div>
             </div>
+            <footer style="text-align:center;padding-top:20px;">
+                <p>Developed by: <a href="http://www.v-choqueuse.com">
+                    Vincent Choqueuse</a></p>
+            </footer>
         </div>
+        
     </body>
 </html>
