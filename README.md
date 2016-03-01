@@ -1,6 +1,6 @@
-# Fourier_synthesis_web_audio
+# Fourier Synthesis Web Audio
 
-This application implements a periodic signal synthesizer. This synthesizer includes several functionalities
+This [web application](http://vincentchoqueuse.github.io/Fourier_synthesis_web_audio.) implements a periodic signal synthesizer. This synthesizer includes several functionalities
 * Synthesis of Periodic waveforms from the Fourier Coefficient
 * Filtering of Periodic waveforms.
 
