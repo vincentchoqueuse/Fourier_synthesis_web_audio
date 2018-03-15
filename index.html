@@ -23,9 +23,6 @@
                                   var gain_direct=context.createGain();
                                   
                                   //init web audio node values
-                                  filter.type="bandpass";
-                                  filter.frequency.value=1000;
-                                  filter.Q.value=100;
                                   gain_direct.gain.value=0.5;
                                   //make web audio connection
                                   gain_direct.connect(context.destination);
@@ -42,7 +39,6 @@
                                                    oscillator.setPeriodicWave(fourier);
                                                    oscillator.frequency.value = $("#ui_freq").val();
                                                    oscillator.connect(gain_direct);
-                                                   oscillator.connect(filter);
                                                    oscillator.start(0);
                                                    }
                                                    else
