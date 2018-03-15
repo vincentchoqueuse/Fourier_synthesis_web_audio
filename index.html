@@ -19,7 +19,7 @@
                                   var ak_vect = new Float32Array(9);
                                   var bk_vect = new Float32Array(9);
                                   ak_vect[1]=1;
-                                  var fourier =context.createPeriodicWave(ak_vect,bk_vect);;
+                                  var fourier =context.createPeriodicWave(ak_vect,bk_vect, {disableNormalization: true});;
                                   var gain_direct=context.createGain();
                                   
                                   //init web audio node values
@@ -34,7 +34,7 @@
                                                    {
                                                    $(this).html("<i class='fa fa-pause'></i> Pause");
                                                    //construct Web audio oscillator (the audio oscillator is recreated when isplaysing is equal to 1)
-                                                   fourier = context.createPeriodicWave(ak_vect,bk_vect);
+                                                   fourier = context.createPeriodicWave(ak_vect,bk_vect, {disableNormalization: true});
                                                    oscillator = context.createOscillator();
                                                    oscillator.setPeriodicWave(fourier);
                                                    oscillator.frequency.value = $("#ui_freq").val();
@@ -63,7 +63,7 @@
                                                              }
                                                              if (isplaying)
                                                              {
-                                                             fourier = context.createPeriodicWave(ak_vect,bk_vect);
+                                                             fourier = context.createPeriodicWave(ak_vect,bk_vect, {disableNormalization: true});
                                                              oscillator.setPeriodicWave(fourier);
                                                              }
                                                              });
